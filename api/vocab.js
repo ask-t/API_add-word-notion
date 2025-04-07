@@ -1,9 +1,10 @@
-const express = require('express');
 const axios = require('axios');
-const app = express();
-app.use(express.json());
 
-app.post('/api/vocab', async (req, res) => {
+module.exports = async (req, res) => {
+  if (req.method !== 'POST') {
+    return res.status(405).send('Method Not Allowed');
+  }
+
   try {
     const data = req.body;
     const {
@@ -37,17 +38,13 @@ app.post('/api/vocab', async (req, res) => {
           status: { name: "インプット中" }
         },
         "頻出度": {
-          select: { name: data["頻出度"] || "null" }
+          select: { name: data["頻出度"] || "🔺あまり使わない" }
         },
         "難易度": {
-          rich_text: [
-            {
-              type: "text",
-              text: {
-                content: data["難易度"] || "null"
-              }
-            }
-          ]
+          rich_text: [{
+            type: "text",
+            text: { content: data["難易度"] || "A1" }
+          }]
         }
       }
     });
@@ -55,47 +52,43 @@ app.post('/api/vocab', async (req, res) => {
     const pageId = pageRes.data.id;
 
     const blocks = [
-      calloutBlock("頻出度", data["頻出度"] || "🔺あまり使わない", "🗣"),
-      calloutBlock("難易度", data["難易度"] || "A1（英検5〜3級レベル）", "🎓"),
-      calloutBlock("意味", data["意味"], "📖"),
-      calloutBlock("語源", data["語源"], "📜"),
-      calloutBlock("コロケーション", (data["collocation"] || "").split(/, ?/).join('\n'), "🔗", "blue_background"),
-      calloutBlock("例文", data["例文"], "📘", "blue_background"),
+      callout("頻出度", data["頻出度"] || "🔺あまり使わない", "🗣"),
+      callout("難易度", data["難易度"] || "A1", "🎓"),
+      callout("意味", data["意味"], "📖"),
+      callout("語源", data["語源"], "📜"),
+      callout("コロケーション", (data["collocation"] || "").split(/, ?/).join("\n"), "🔗", "blue_background"),
+      callout("例文", data["例文"], "📘", "blue_background"),
       data["イメージ検索"]
-        ? calloutBlockWithLink("イメージ", "🔍 Google画像検索でチェック", data["イメージ検索"], "🖼", "yellow_background")
+        ? calloutWithLink("イメージ", "🔍 Google画像検索でチェック", data["イメージ検索"], "🖼", "yellow_background")
         : null,
-      calloutBlock("類似表現", data["類似表現"], "🪞", "green_background")
+      callout("類似表現", data["類似表現"], "🪞", "green_background")
     ].filter(Boolean);
 
-    // 通常の callout
-    function calloutBlock(title, content, emoji, color = 'gray_background') {
+    function callout(title, content, emoji, color = "gray_background") {
       return {
-        object: 'block',
-        type: 'callout',
+        object: "block",
+        type: "callout",
         callout: {
-          icon: { type: 'emoji', emoji },
-          rich_text: [{ type: 'text', text: { content } }],
+          icon: { type: "emoji", emoji },
+          rich_text: [{ type: "text", text: { content } }],
           color
         }
       };
     }
 
-    // リンク付き callout（修正済）
-    function calloutBlockWithLink(title, text, url, emoji, color = 'gray_background') {
+    function calloutWithLink(title, text, url, emoji, color = "gray_background") {
       return {
-        object: 'block',
-        type: 'callout',
+        object: "block",
+        type: "callout",
         callout: {
-          icon: { type: 'emoji', emoji },
-          rich_text: [
-            {
-              type: 'text',
-              text: {
-                content: text,
-                link: { url }
-              }
+          icon: { type: "emoji", emoji },
+          rich_text: [{
+            type: "text",
+            text: {
+              content: text,
+              link: { url }
             }
-          ],
+          }],
           color
         }
       };
@@ -110,4 +103,4 @@ app.post('/api/vocab', async (req, res) => {
     console.error(err.response?.data || err.message);
     res.status(500).json({ error: 'Failed to add word to Notion.' });
   }
-});
+};
