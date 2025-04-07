@@ -55,49 +55,19 @@ app.post('/api/vocab', async (req, res) => {
     const pageId = pageRes.data.id;
 
     const blocks = [
-      // 🥇 頻出度 - 固定分類の表示
       calloutBlock("頻出度", data["頻出度"] || "🔺あまり使わない", "🗣"),
-
-      // 🎓 難易度
       calloutBlock("難易度", data["難易度"] || "A1（英検5〜3級レベル）", "🎓"),
-
-      // 📖 意味（グレー背景）
       calloutBlock("意味", data["意味"], "📖"),
-
-      // 📜 語源（グレー背景）
       calloutBlock("語源", data["語源"], "📜"),
-
-      // 🔗 コロケーション（青背景＋改行処理）
       calloutBlock("コロケーション", (data["collocation"] || "").split(/, ?/).join('\n'), "🔗", "blue_background"),
-
-      // 📘 例文（青背景）
       calloutBlock("例文", data["例文"], "📘", "blue_background"),
-
-      // 🖼 イメージ検索（黄色背景）
-      data["イメージ検索"] ? calloutBlock("イメージ", `🔍 [Google画像検索でチェック](${data["イメージ検索"]})`, "🖼", "yellow_background") : null,
- 
-      // 🪞 類似表現（緑背景）
+      data["イメージ検索"]
+        ? calloutBlockWithLink("イメージ", "🔍 Google画像検索でチェック", data["イメージ検索"], "🖼", "yellow_background")
+        : null,
       calloutBlock("類似表現", data["類似表現"], "🪞", "green_background")
     ].filter(Boolean);
 
-    // 補助関数
-    function toggleBlock(title, content, color = "default") {
-      return {
-        object: 'block',
-        type: 'toggle',
-        toggle: {
-          rich_text: [{ type: 'text', text: { content: title }, annotations: { bold: true, color } }],
-          children: [{
-            object: 'block',
-            type: 'paragraph',
-            paragraph: {
-              rich_text: [{ type: 'text', text: { content } }]
-            }
-          }]
-        }
-      };
-    }
-
+    // 通常の callout
     function calloutBlock(title, content, emoji, color = 'gray_background') {
       return {
         object: 'block',
@@ -110,7 +80,26 @@ app.post('/api/vocab', async (req, res) => {
       };
     }
 
-
+    // リンク付き callout（修正済）
+    function calloutBlockWithLink(title, text, url, emoji, color = 'gray_background') {
+      return {
+        object: 'block',
+        type: 'callout',
+        callout: {
+          icon: { type: 'emoji', emoji },
+          rich_text: [
+            {
+              type: 'text',
+              text: {
+                content: text,
+                link: { url }
+              }
+            }
+          ],
+          color
+        }
+      };
+    }
 
     await notion.patch(`/blocks/${pageId}/children`, {
       children: blocks
