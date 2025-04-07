@@ -111,8 +111,3 @@ app.post('/api/vocab', async (req, res) => {
     res.status(500).json({ error: 'Failed to add word to Notion.' });
   }
 });
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
-});
