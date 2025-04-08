@@ -1,0 +1,50 @@
+# 依存関係
+/node_modules
+/package-lock.json
+/yarn.lock
+/.pnp
+.pnp.js
+
+# ビルド出力
+/build
+/dist
+/.next
+/.nuxt
+/out
+
+# 環境変数
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ログファイル
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs
+*.log
+
+# デプロイメントファイル
+/.vercel
+/.serverless
+.netlify
+
+# エディターの設定
+/.idea
+/.vscode
+*.swp
+*.swo
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# キャッシュとテストカバレッジ
+/.cache
+/coverage
+/.nyc_output
+
+# APIキーやシークレット
+.env.*.local
+.env.local 
